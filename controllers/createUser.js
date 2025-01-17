@@ -74,4 +74,48 @@ const signupController = async (req, res) => {
   }
 };
 
-module.exports = signupController;
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Validate password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRY,
+    });
+
+    // Set token as a cookie (httpOnly for security)
+    res.cookie('jwt', token, {
+      httpOnly: true, // Prevents client-side scripts from accessing the cookie
+      secure: process.env.NODE_ENV === 'production', // Secure flag for HTTPS in production
+      sameSite: 'strict', // Prevent CSRF attacks
+      maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+    });
+
+    // Respond with success and user info
+    res.status(200).json({
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { signupController, loginController };

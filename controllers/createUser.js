@@ -18,6 +18,7 @@ const generateJWT = (userId, role) => {
 // Signup Controller
 const signupController = async (req, res) => {
   const { email, googleId, role, password } = req.body;
+  console.log("signupController", req.body);
 
   try {
     // Check if the user already exists

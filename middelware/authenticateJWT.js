@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-dotenv.config();    
+dotenv.config();
 
 // Middleware to verify JWT token from cookies
 const authenticateJWT = (req, res, next) => {
-  const token = req.cookies.auth_token;
-
+  
+  const token = req.cookies.jwt; // Ensure the cookie name matches the one set in loginController
   if (!token) {
     return res.status(403).json({ message: 'Access denied, token missing' });
   }
@@ -14,8 +14,8 @@ const authenticateJWT = (req, res, next) => {
     if (err) {
       return res.status(403).json({ message: 'Invalid or expired token' });
     }
-    req.user.id = user.id; // Add user data to the request object
-    req.user.role = user.role; // Add user data to the request object
+
+    req.user = user; // Initialize req.user and set it directly to the decoded user object
     next();
   });
 };

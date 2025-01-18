@@ -55,7 +55,7 @@ const signupController = async (req, res) => {
     const token = generateJWT(savedUser._id, savedUser.role);
 
     // Set the JWT token as an HTTP-only cookie
-    res.cookie('auth_token', token, {
+    res.cookie('jwt', token, {
       httpOnly: true, // Prevent JavaScript access to the token
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       maxAge: 3600000, // Token expires in 1 hour
@@ -91,8 +91,8 @@ const loginController = async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRY,
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
     });
 
     // Set token as a cookie (httpOnly for security)

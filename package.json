@@ -5,7 +5,9 @@
   "main": "app.js",
   "scripts": {
     "test": "nodemon app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "build": "echo 'No build step required'",
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",

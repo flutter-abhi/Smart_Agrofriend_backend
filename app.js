@@ -18,7 +18,9 @@ app.use('/api', router);
 
 // Basic route
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    res.status(200).json({
+        msg: "hellow"
+    })
 });
 
 // Start the server

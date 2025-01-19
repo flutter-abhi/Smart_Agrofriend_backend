@@ -10,6 +10,7 @@ const equipmentSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   location: { type: String },
   available: { type: Boolean, default: true },
+  imageUrls: { type: [String] }, // Array of image URLs
   createdAt: { type: Date, default: Date.now }
 });
 

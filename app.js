@@ -10,6 +10,7 @@ const connectDB = require('./config/mongodbConfig');
 
 connectDB();
 
+
 // Middleware to handle JSON requests
 app.use(cookieParser());
 app.use(express.json());

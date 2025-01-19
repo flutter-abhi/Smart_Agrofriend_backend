@@ -1,11 +1,11 @@
-const JobApplication = require('../models/jobApplication'); // Assuming you have a JobApplication model
-const JobPost = require('../models/jobPost');
+const JobApplication = require('../schema/jobApplication'); // Assuming you have a JobApplication model
+const JobPost = require('../schema/Job_PostSchema');
 
 // Apply for a Job
 const applyForJob = async (req, res) => {
     try {
-        const { jobId } = req.params; // Job ID from request parameters
-        const { applicantId, coverLetter } = req.body; // Applicant ID and cover letter from request body
+
+        const { jobId, applicantId, coverLetter } = req.body; // Applicant ID and cover letter from request body
 
         // Check if the job post exists and is open
         const jobPost = await JobPost.findById(jobId);
@@ -69,8 +69,42 @@ const deleteApplication = async (req, res) => {
     }
 };
 
+//
+const approveApplication = async (req, res) => {
+    try {
+        const { applicationId } = req.params; // Get application ID from URL params
+        const { userId } = req.user; // Assuming user is authenticated and user ID is available in req.user
+
+        // Find the application
+        const application = await JobApplication.findById(applicationId).populate('jobId');
+        if (!application) {
+            return res.status(404).json({ message: 'Job application not found' });
+        }
+
+        // Check if the user is the job owner
+        if (application.jobId.farmerId.toString() !== userId) {
+            return res.status(403).json({ message: 'You do not have permission to approve this application' });
+        }
+
+        // Approve the selected application
+        application.status = 'approved';
+        await application.save();
+
+        // Reject other applications for the same job
+        await JobApplication.updateMany(
+            { jobId: application.jobId._id, _id: { $ne: applicationId } },
+            { status: 'rejected' }
+        );
+
+        res.json({ message: 'Job application approved and others rejected', application });
+    } catch (error) {
+        res.status(500).json({ error: 'Error approving job application' });
+    }
+};
+
 module.exports = {
     applyForJob,
     getApplications,
     deleteApplication,
+    approveApplication
 };

@@ -5,8 +5,9 @@ const JobPost = require('../schema/Job_PostSchema');
 const createJobPost = async (req, res) => {
     const { title, description, pay, location, skillsRequired } = req.body;
 
-    const farmerId = req.user.userId; // Assuming the user ID is available in req.user.id after authentication
-
+    const farmerId = req.user.userId ?? req.user.id; // Assuming the user ID is available in req.user.id after authentication
+    console.log(req.user);
+    console.log()
     try {
         const newJobPost = new JobPost({
             farmerId,

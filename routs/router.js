@@ -5,8 +5,7 @@ const { getProfile, updateProfile, deleteProfile } = require('../controllers/use
 const authenticateJWT = require('../middelware/authenticateJWT');
 const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('../controllers/jobPost');
 const { applyForJob, getApplications, deleteApplication, approveApplication } = require("../controllers/jobApplicationController")
-// const { upload, addEquipment } = require("../controllers/addEqupment").default
-
+const { upload, addEquipment } = require("../controllers/addEqupment");
 
 ///user authenticated
 
@@ -36,6 +35,6 @@ router.delete('/approveApplication', approveApplication);
 //equpment 
 
 //
-// router.post('/addEquipment', upload.array('images', 5), addEquipment)
+router.post('/addEquipment', authenticateJWT, upload.array('images', 3), addEquipment)
 
 module.exports = router;

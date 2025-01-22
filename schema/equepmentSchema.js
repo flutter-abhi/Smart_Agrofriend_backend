@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
-const User = require('./UserSchema');
 
 const equipmentSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Owner of the equipment
   title: { type: String, required: true },
   description: { type: String, required: true },
   tags: { type: [String] },
@@ -10,7 +9,10 @@ const equipmentSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   location: { type: String },
   available: { type: Boolean, default: true },
-  imageUrls: { type: [String] }, // Array of image URLs
+  imageUrls: { type: [String] },
+  rentedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // User renting the equipment
+  rentStartDate: { type: Date, default: null }, // Start date of rental
+  rentEndDate: { type: Date, default: null },   // End date of rental
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -6,7 +6,7 @@ dotenv.config();
 const authenticateJWT = (req, res, next) => {
 
   const token = req.cookies.jwt; // Ensure the cookie name matches the one set in loginController
-  console.log(req.cookies);
+
   if (!token) {
     return res.status(403).json({ message: 'Access denied, token missing' });
   }

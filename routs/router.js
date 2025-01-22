@@ -5,7 +5,7 @@ const { getProfile, updateProfile, deleteProfile } = require('../controllers/use
 const authenticateJWT = require('../middelware/authenticateJWT');
 const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('../controllers/jobPost');
 const { applyForJob, getApplications, deleteApplication, approveApplication } = require("../controllers/jobApplicationController")
-const { upload, addEquipment } = require("../controllers/addEqupment");
+const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment } = require("../controllers/addEqupment");
 
 ///user authenticated
 
@@ -19,7 +19,7 @@ router.delete('/profile', authenticateJWT, deleteProfile);
 
 ///job post
 router.post('/job-posts/create', authenticateJWT, createJobPost);
-router.get('/job-posts/get', authenticateJWT, getJobPosts);
+router.get('/job-posts/get', getJobPosts);
 router.put('/job-posts/update', authenticateJWT, updateJobPost);
 router.delete('/job-posts/delete', authenticateJWT, deleteJobPost);
 
@@ -35,6 +35,9 @@ router.delete('/approveApplication', approveApplication);
 //equpment 
 
 //
-router.post('/addEquipment', authenticateJWT, upload.array('images', 3), addEquipment)
-
+router.post('/equipment/addEquipment', authenticateJWT, upload.array('images', 3), addEquipment)
+router.get('/equipment/getEquipment', getEquipmentByUser);
+router.post('/equipment/rentEquipment', rentEquipment);
+router.put('/equipment/unrentEquipment', unrentEquipment);
+router.delete('/equipment/deleteEquepment', authenticateJWT, deleteEquipment)
 module.exports = router;

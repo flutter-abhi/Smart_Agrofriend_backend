@@ -16,7 +16,7 @@ const generateJWT = (userId, role) => {
 
 // Signup Controller
 const signupController = async (req, res) => {
-  const { name, contactNumber, role, password, village, district, taluka } = req.body; // Accept separate location parameters
+  const { name, contactNumber, role, password, village, district, taluka, state } = req.body; // Accept separate location parameters
 
   console.log("signupController", req.body);
 
@@ -28,7 +28,7 @@ const signupController = async (req, res) => {
     }
 
     // Hash the password if provided
-    let hashedPassword;
+    let hashedPassword = null;
     if (password) {
       hashedPassword = await bcrypt.hash(password, 10); // Hashing the password
     }
@@ -39,39 +39,32 @@ const signupController = async (req, res) => {
       phoneNumber: contactNumber,
       role,
       password: hashedPassword, // Store hashed password for normal authentication
-      location: { // Update to use separate location parameters
+      location: { // Save location using the provided parameters
         village,
         district,
         taluka,
+        state,
       },
     });
 
     const savedUser = await newUser.save();
 
-    // // Create and save the user profile
-    // const newProfile = new LaborFarmerProfile({
-    //   userId: savedUser._id,
-    //   role, // Role (e.g., 'laborer' or 'farmer')
-    //   contactNumber: contactNumber,
-    //   location: `${location.village}, ${location.taluka}, ${location.district}`,
-    // });
-
-    // const savedProfile = await newProfile.save();
-
     // Generate JWT token
-    const token = generateJWT(savedUser._id, savedUser.role);
+    const token = jwt.sign({ id: savedUser._id, role: savedUser.role }, process.env.JWT_SECRET, {
+      expiresIn: '1h', // Token expires in 1 hour
+    });
 
     // Set the JWT token as an HTTP-only cookie
     res.cookie('jwt', token, {
       httpOnly: true, // Prevent JavaScript access to the token
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict', // Prevent CSRF attacks
       maxAge: 3600000, // Token expires in 1 hour
     });
 
-    // Send response with user and profile data
+    // Send response with user data
     res.status(201).json({
       user: savedUser,
-      profile: savedProfile,
       message: 'User signed up successfully',
     });
 
@@ -80,6 +73,7 @@ const signupController = async (req, res) => {
     res.status(500).json({ message: 'Error signing up', error: error.message });
   }
 };
+
 
 const loginController = async (req, res) => {
   const { phoneNumber, password } = req.body; // Accept phoneNumber and password

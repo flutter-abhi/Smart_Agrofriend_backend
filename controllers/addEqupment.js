@@ -18,16 +18,9 @@ const fileFilter = (req, file, cb) => {
         return cb(new Error('Invalid file type. Only JPG, PNG, GIF are allowed.'), false); // Reject the file
     }
 };
+exports.fileFilter = fileFilter;
 
-// Configure Cloudinary storage for Multer
-// const storage = new CloudinaryStorage({
-//     cloudinary: cloudinary,
-//     params: {
-//         folder: 'equipment_uploads', // Specify the folder in Cloudinary
-//         format: async (req, file) => 'png', // Optional: file format
-//         public_id: (req, file) => file.originalname.split('.')[0] + '-' + Date.now() // Unique filename
-//     }
-// });
+
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -44,6 +37,7 @@ const storage = new CloudinaryStorage({
         }
     }
 });
+exports.storage = storage;
 
 
 const upload = multer({ storage: storage, fileFilter: fileFilter });

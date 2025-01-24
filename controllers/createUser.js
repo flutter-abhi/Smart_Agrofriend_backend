@@ -1,45 +1,45 @@
 const User = require('../schema/UserSchema');
-const LaborFarmerProfile = require('../schema/Labour_FarmerSchema');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-dotenv.config();
 
+
+dotenv.config();
 
 // Helper function to generate JWT token
 const generateJWT = (userId, role) => {
   const payload = { userId, role };
-  const secretKey = process.env.JWT_SECRET || 'your_secret_key'; // Use a secret key from environment variables for security
-  const options = { expiresIn: '36h' }; // Token expires in 1 hour
+  const secretKey = process.env.JWT_SECRET || 'your_secret_key'; // Use a secure key
+  const options = { expiresIn: '36h' }; // Token expires in 36 hours
   return jwt.sign(payload, secretKey, options);
 };
 
-// Signup Controller
+// **Signup Controller**
 const signupController = async (req, res) => {
-  const { name, contactNumber, role, password, village, district, taluka, state } = req.body; // Accept separate location parameters
+  const { name, phoneNumber, role, password, village, district, taluka, state } = req.body;
 
-  console.log("signupController", req.body);
+  console.log("Signup Request:", req.body);
 
   try {
-    // Check if the user already exists using contactNumber
-    const existingUser = await User.findOne({ phoneNumber: contactNumber });
+    // Check if the user already exists using phoneNumber
+    const existingUser = await User.findOne({ phoneNumber });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password if provided
+    // Hash the password (if provided)
     let hashedPassword = null;
     if (password) {
-      hashedPassword = await bcrypt.hash(password, 10); // Hashing the password
+      hashedPassword = await bcrypt.hash(password, 10); // Hash password using bcrypt
     }
 
-    // Create and save the user to the database
+    // Create and save the user in the database
     const newUser = new User({
       fullName: name,
-      phoneNumber: contactNumber,
+      phoneNumber,
       role,
-      password: hashedPassword, // Store hashed password for normal authentication
-      location: { // Save location using the provided parameters
+      password: hashedPassword, // Store hashed password
+      location: {
         village,
         district,
         taluka,
@@ -50,36 +50,33 @@ const signupController = async (req, res) => {
     const savedUser = await newUser.save();
 
     // Generate JWT token
-    const token = jwt.sign({ id: savedUser._id, role: savedUser.role }, process.env.JWT_SECRET, {
-      expiresIn: '1h', // Token expires in 1 hour
-    });
+    const token = generateJWT(savedUser._id, savedUser.role);
 
-    // Set the JWT token as an HTTP-only cookie
+    // Set JWT token as an HTTP-only cookie
     res.cookie('jwt', token, {
-      httpOnly: true, // Prevent JavaScript access to the token
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: 'strict', // Prevent CSRF attacks
-      maxAge: 3600000, // Token expires in 1 hour
+      httpOnly: true, // Prevents client-side script access
+      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+      sameSite: 'strict', // Protect against CSRF
+      maxAge: 3600000, // 1 hour in milliseconds
     });
 
-    // Send response with user data
+    // Respond with success and user data
     res.status(201).json({
       user: savedUser,
       message: 'User signed up successfully',
     });
-
   } catch (error) {
-    console.error(error);
+    console.error("Signup Error:", error);
     res.status(500).json({ message: 'Error signing up', error: error.message });
   }
 };
 
-
+// **Login Controller**
 const loginController = async (req, res) => {
-  const { phoneNumber, password } = req.body; // Accept phoneNumber and password
+  const { phoneNumber, password } = req.body;
 
   try {
-    // Check if user exists
+    // Check if the user exists
     const user = await User.findOne({ phoneNumber });
     if (!user) {
       return res.status(401).json({ message: 'Invalid phone number or password' });
@@ -92,15 +89,13 @@ const loginController = async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '36h', // Token expires in 1 hour
-    });
+    const token = generateJWT(user._id, user.role);
 
-    // Set token as a cookie (httpOnly for security)
+    // Set JWT token as an HTTP-only cookie
     res.cookie('jwt', token, {
-      httpOnly: true, // Prevents client-side scripts from accessing the cookie
-      secure: process.env.NODE_ENV === 'production', // Secure flag for HTTPS in production
-      sameSite: 'strict', // Prevent CSRF attacks
+      httpOnly: true, // Prevents client-side script access
+      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+      sameSite: 'strict', // Protect against CSRF
       maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
     });
 
@@ -114,10 +109,9 @@ const loginController = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Login Error:", error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 
 module.exports = { signupController, loginController };

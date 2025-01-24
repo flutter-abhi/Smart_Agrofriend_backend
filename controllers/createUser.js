@@ -17,17 +17,18 @@ const generateJWT = (userId, role) => {
 
 // Signup Controller
 const signupController = async (req, res) => {
-  const { email, googleId, role, password } = req.body;
+  const { name, contactNumber, location, role, password } = req.body; // Accept name, contactNumber, location, role, and password
+
   console.log("signupController", req.body);
 
   try {
-    // Check if the user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if the user already exists using contactNumber
+    const existingUser = await User.findOne({ phoneNumber: contactNumber });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password if it's not from Google authentication
+    // Hash the password if provided
     let hashedPassword;
     if (password) {
       hashedPassword = await bcrypt.hash(password, 10); // Hashing the password
@@ -35,21 +36,24 @@ const signupController = async (req, res) => {
 
     // Create and save the user to the database
     const newUser = new User({
-      email,
-      googleId,
+      fullName: name,
+      phoneNumber: contactNumber,
       role,
       password: hashedPassword, // Store hashed password for normal authentication
+      location, // Includes village, district, and taluka
     });
 
     const savedUser = await newUser.save();
 
-    // Create and save the user profile (LaborFarmerProfile or other roles)
-    const newProfile = new LaborFarmerProfile({
-      userId: savedUser._id,
-      role: role, // Role (e.g., 'laborer' or 'farmer')
-    });
+    // // Create and save the user profile
+    // const newProfile = new LaborFarmerProfile({
+    //   userId: savedUser._id,
+    //   role, // Role (e.g., 'laborer' or 'farmer')
+    //   contactNumber: contactNumber,
+    //   location: `${location.village}, ${location.taluka}, ${location.district}`,
+    // });
 
-    const savedProfile = await newProfile.save();
+    // const savedProfile = await newProfile.save();
 
     // Generate JWT token
     const token = generateJWT(savedUser._id, savedUser.role);
@@ -75,24 +79,24 @@ const signupController = async (req, res) => {
 };
 
 const loginController = async (req, res) => {
-  const { email, password } = req.body;
+  const { phoneNumber, password } = req.body; // Accept phoneNumber and password
 
   try {
     // Check if user exists
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ phoneNumber });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid phone number or password' });
     }
 
     // Validate password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid phone number or password' });
     }
 
     // Generate JWT token
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
+      expiresIn: '36h', // Token expires in 1 hour
     });
 
     // Set token as a cookie (httpOnly for security)
@@ -108,14 +112,15 @@ const loginController = async (req, res) => {
       message: 'Login successful',
       user: {
         id: user._id,
-        email: user.email,
+        phoneNumber: user.phoneNumber,
         role: user.role,
       },
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
 module.exports = { signupController, loginController };

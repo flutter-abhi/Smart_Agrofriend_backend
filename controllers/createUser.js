@@ -1,4 +1,3 @@
-
 const User = require('../schema/UserSchema');
 const LaborFarmerProfile = require('../schema/Labour_FarmerSchema');
 const bcrypt = require('bcrypt');
@@ -11,13 +10,13 @@ dotenv.config();
 const generateJWT = (userId, role) => {
   const payload = { userId, role };
   const secretKey = process.env.JWT_SECRET || 'your_secret_key'; // Use a secret key from environment variables for security
-  const options = { expiresIn: '1h' }; // Token expires in 1 hour
+  const options = { expiresIn: '36h' }; // Token expires in 1 hour
   return jwt.sign(payload, secretKey, options);
 };
 
 // Signup Controller
 const signupController = async (req, res) => {
-  const { name, contactNumber, location, role, password } = req.body; // Accept name, contactNumber, location, role, and password
+  const { name, contactNumber, role, password, village, district, taluka } = req.body; // Accept separate location parameters
 
   console.log("signupController", req.body);
 
@@ -40,7 +39,11 @@ const signupController = async (req, res) => {
       phoneNumber: contactNumber,
       role,
       password: hashedPassword, // Store hashed password for normal authentication
-      location, // Includes village, district, and taluka
+      location: { // Update to use separate location parameters
+        village,
+        district,
+        taluka,
+      },
     });
 
     const savedUser = await newUser.save();

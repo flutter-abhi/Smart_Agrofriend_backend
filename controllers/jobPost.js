@@ -3,28 +3,66 @@ const JobPost = require('../schema/Job_PostSchema');
 
 // Create a new job post
 const createJobPost = async (req, res) => {
-    const { title, description, pay, village,district,taluka,state, skillsRequired,labours_req } = req.body;
 
-    const farmerId = req.user.userId ?? req.user.id; // Assuming the user ID is available in req.user.id after authentication
-    console.log(req.user);
-    console.log()
+    const {
+        title,
+        description,
+        pay,
+        village,
+        district,
+        taluka,
+        state,
+        skillsRequired,
+        labours_req,
+        startDate,
+        endDate,
+        deadline,
+        workType
+    } = req.body;
+
+    const farmerId = req.user.userId ?? req.user.id; // Assuming user ID is attached after authentication
+
     try {
+        // Validate required fields
+        if (!title || !description || !pay || !village || !district || !taluka || !startDate || !endDate) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        // Check if the end date is after the start date
+        if (new Date(endDate) <= new Date(startDate)) {
+            return res.status(400).json({ message: 'End date must be after start date' });
+        }
+
+        // Check if the deadline (if provided) is before the start date
+        if (deadline && new Date(deadline) >= new Date(startDate)) {
+            return res.status(400).json({ message: 'Deadline must be before the start date' });
+        }
+
+        // Create a new job post
         const newJobPost = new JobPost({
             farmerId,
             title,
             description,
             pay,
             labours_req,
+            labours_app: 0, // Default value for labours applied
+            workType,
             location: {
                 village,
                 district,
                 taluka,
-                state
-              },
+                state: state || 'maharastra', // Default state is Maharashtra
+            },
             skillsRequired,
+            status: 'open', // Default status is 'open'
+            startDate,
+            endDate,
+            deadline,
         });
 
+        // Save the job post to the database
         const savedJobPost = await newJobPost.save();
+
         res.status(201).json({
             message: 'Job post created successfully',
             jobPost: savedJobPost,
@@ -36,6 +74,7 @@ const createJobPost = async (req, res) => {
         });
     }
 };
+
 
 // Get all job posts or filter by criteria
 const getJobPosts = async (req, res) => {
@@ -62,7 +101,7 @@ const getJobPosts = async (req, res) => {
         if (state) {
             locationFilters.push({ 'location.state': state }); // Add state filter if provided
         }
-        
+
         if (locationFilters.length > 0) {
             filter.$or = locationFilters; // Use $or to match any of the location fields
         }
@@ -80,27 +119,36 @@ const getJobPosts = async (req, res) => {
 
 // Update an existing job post
 const updateJobPost = async (req, res) => {
-    const { id, title, description, pay, labours_req, location, skillsRequired, status } = req.body;
+    const { id } = req.params; // Use params for ID
+    const userId = req.user.userId || req.user.id; // Extract logged-in user's ID
+    const updateFields = req.body; // Extract fields to update from the request body
 
     try {
+        // Validate job post ID
+        if (!id) {
+            return res.status(400).json({ message: 'Job post ID is required' });
+        }
+
         // Find the job post by ID
         const jobPost = await JobPost.findById(id);
-
         if (!jobPost) {
             return res.status(404).json({ message: 'Job post not found' });
         }
 
-        // Allow update if the user is the owner or has permission
-        const userId = req.user.userId; // Logged-in user's ID from the JWT token
+        // Check if the logged-in user is authorized
         if (jobPost.farmerId.toString() !== userId) {
             return res.status(403).json({ message: 'You are not authorized to update this job post' });
         }
 
-        const updatedJobPost = await JobPost.findByIdAndUpdate(
-            id,
-            { title, description, pay, labours_req, location, skillsRequired, status },
-            { new: true, runValidators: true }
-        );
+        // Dynamically update only provided fields
+        Object.keys(updateFields).forEach((key) => {
+            if (updateFields[key] !== undefined) {
+                jobPost[key] = updateFields[key];
+            }
+        });
+
+        // Save the updated job post
+        const updatedJobPost = await jobPost.save();
 
         res.status(200).json({
             message: 'Job post updated successfully',
@@ -113,6 +161,7 @@ const updateJobPost = async (req, res) => {
         });
     }
 };
+
 
 // Delete a job post
 const deleteJobPost = async (req, res) => {
@@ -150,23 +199,3 @@ module.exports = {
 };
 
 
-// // Retrieve All Job Posts:
-
-// Request: GET /api/job-posts
-// filter: {} (empty object)
-// Result: All job posts are retrieved.
-// Retrieve Job Posts by Farmer ID:
-
-// Request: GET /api/job-posts?farmerId=123
-// filter: { farmerId: '123' }
-// Result: Only job posts where farmerId is 123 are retrieved.
-// Retrieve Job Posts by Status:
-
-// Request: GET /api/job-posts?status=open
-// filter: { status: 'open' }
-// Result: Only job posts with status set to open are retrieved.
-// Retrieve Job Posts by Farmer ID and Status:
-
-// Request: GET /api/job-posts?farmerId=123&status=open
-// filter: { farmerId: '123', status: 'open' }
-// Result: Only job posts with farmerId 123 and status open are retrieved.

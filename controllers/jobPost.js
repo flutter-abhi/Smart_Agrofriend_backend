@@ -3,7 +3,7 @@ const JobPost = require('../schema/Job_PostSchema');
 
 // Create a new job post
 const createJobPost = async (req, res) => {
-    const { title, description, pay, location, skillsRequired } = req.body;
+    const { title, description, pay, village,district,taluka,state, skillsRequired,labours_req } = req.body;
 
     const farmerId = req.user.userId ?? req.user.id; // Assuming the user ID is available in req.user.id after authentication
     console.log(req.user);
@@ -14,7 +14,13 @@ const createJobPost = async (req, res) => {
             title,
             description,
             pay,
-            location,
+            labours_req,
+            location: {
+                village,
+                district,
+                taluka,
+                state
+              },
             skillsRequired,
         });
 
@@ -34,16 +40,33 @@ const createJobPost = async (req, res) => {
 // Get all job posts or filter by criteria
 const getJobPosts = async (req, res) => {
     try {
-        const { status, location, farmerId } = req.query; // Extracting query parameters
+        const { status, village, district, taluka, state, farmerId } = req.query; // Extracting query parameters
 
         // Building the filter object dynamically
         const filter = {};
         if (status) {
             filter.status = status; // Add status filter if provided
         }
-        if (location) {
-            filter.location = location; // Add location filter if provided
+
+        // Add location filters if provided
+        const locationFilters = [];
+        if (village) {
+            locationFilters.push({ 'location.village': village }); // Add village filter if provided
         }
+        if (district) {
+            locationFilters.push({ 'location.district': district }); // Add district filter if provided
+        }
+        if (taluka) {
+            locationFilters.push({ 'location.taluka': taluka }); // Add taluka filter if provided
+        }
+        if (state) {
+            locationFilters.push({ 'location.state': state }); // Add state filter if provided
+        }
+        
+        if (locationFilters.length > 0) {
+            filter.$or = locationFilters; // Use $or to match any of the location fields
+        }
+
         if (farmerId) {
             filter.farmerId = farmerId; // Add farmerId filter if provided
         }
@@ -57,19 +80,27 @@ const getJobPosts = async (req, res) => {
 
 // Update an existing job post
 const updateJobPost = async (req, res) => {
-
-    const { id, title, description, pay, location, skillsRequired, status } = req.body;
+    const { id, title, description, pay, labours_req, location, skillsRequired, status } = req.body;
 
     try {
-        const updatedJobPost = await JobPost.findByIdAndUpdate(
-            id,
-            { title, description, pay, location, skillsRequired, status },
-            { new: true, runValidators: true }
-        );
+        // Find the job post by ID
+        const jobPost = await JobPost.findById(id);
 
-        if (!updatedJobPost) {
+        if (!jobPost) {
             return res.status(404).json({ message: 'Job post not found' });
         }
+
+        // Allow update if the user is the owner or has permission
+        const userId = req.user.userId; // Logged-in user's ID from the JWT token
+        if (jobPost.farmerId.toString() !== userId) {
+            return res.status(403).json({ message: 'You are not authorized to update this job post' });
+        }
+
+        const updatedJobPost = await JobPost.findByIdAndUpdate(
+            id,
+            { title, description, pay, labours_req, location, skillsRequired, status },
+            { new: true, runValidators: true }
+        );
 
         res.status(200).json({
             message: 'Job post updated successfully',

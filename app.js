@@ -19,7 +19,7 @@ app.use('/api', router);
 
 // Basic route
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + './default.html'); // Send the HTML file
+    res.sendFile(__dirname + '/default.html'); // Send the HTML file
 });
 
 // Start the server

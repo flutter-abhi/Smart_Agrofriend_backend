@@ -6,7 +6,7 @@ const authenticateJWT = require('../middelware/authenticateJWT');
 const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('../controllers/jobPost');
 const { applyForJob, getApplications, deleteApplication, approveApplication } = require("../controllers/jobApplicationController")
 const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment } = require("../controllers/addEqupment");
-const { createAnimalPost,getAnimalPosts,updateAnimalPost,deleteAnimalPost,autoArchiveExpiredPosts,uploadanimal} = require("../controllers/animalModel")
+const { createAnimalPost, getAnimalPosts, updateAnimalPost, deleteAnimalPost, autoArchiveExpiredPosts, uploadanimal } = require("../controllers/animalModel")
 ///user authenticated
 
 router.post('/signup', signupController);
@@ -26,9 +26,9 @@ router.delete('/job-posts/delete', authenticateJWT, deleteJobPost);
 //job application route
 
 router.post('/applyForJob', applyForJob);
-router.get('/getApplications', getApplications);
-router.delete('/deleteApplication', deleteApplication);
-router.delete('/approveApplication', approveApplication);
+router.get('/getApplications', authenticateJWT, getApplications);
+router.delete('/deleteApplication', authenticateJWT, deleteApplication);
+router.delete('/approveApplication', authenticateJWT, approveApplication);
 
 
 ///

@@ -31,6 +31,12 @@ const applyForJob = async (req, res) => {
     try {
         const { jobId, applicantId, coverLetter } = req.body; // Applicant ID and cover letter from request body
 
+        // Check if the user has already applied for this job
+        const existingApplication = await JobApplication.findOne({ jobId, applicantId });
+        if (existingApplication) {
+            return res.status(400).json({ message: 'You have already applied for this job' });
+        }
+
         // Check if the job post exists and is open
         const jobPost = await JobPost.findById(jobId);
         if (!jobPost || jobPost.status !== 'open') {
@@ -66,7 +72,10 @@ const applyForJob = async (req, res) => {
         await application.save();
         res.status(201).json({ message: 'Job application submitted successfully', application });
     } catch (error) {
-        res.status(500).json({ error: 'Error applying for job' });
+        res.status(500).json({
+            message: 'Error applying for job',
+            error: error
+        });
     }
 };
 
@@ -74,7 +83,8 @@ const applyForJob = async (req, res) => {
 // Get Job Applications
 const getApplications = async (req, res) => {
     try {
-        const { jobId, applicantId, status } = req.query; // Query parameters for filtering applications
+        const { jobId, applicantId, status } = req.query;
+        // Query parameters for filtering applications
         if (!jobId) {
             return res.status(400).json({ message: 'jobId is required in query' });
         }
@@ -84,6 +94,12 @@ const getApplications = async (req, res) => {
         if (jobId) filter.jobId = jobId;
         if (applicantId) filter.applicantId = applicantId;
         if (status) filter.status = status; // Add status filtering
+
+        // // Add filter for farmerId based on jobId
+        // const jobPost = await JobPost.findById(jobId); // Find job post by jobId
+        // // if (jobPost) {
+        // //     filter.farmerId = jobPost.farmerId; // Add farmerId to filter
+        // // }
 
         const applications = await JobApplication.find(filter)
             .populate('jobId')

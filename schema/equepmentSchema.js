@@ -7,7 +7,12 @@ const equipmentSchema = new mongoose.Schema({
   tags: { type: [String] },
   type: { type: String, enum: ['rent', 'buy'], required: true },
   price: { type: Number, required: true },
-  location: { type: String },
+  location: {
+    village: { type: String, required: true }, // Village name
+    district: { type: String, required: true }, // District name
+    taluka: { type: String, required: true },
+    state: { type: String, required: true }
+  },
   available: { type: Boolean, default: true },
   imageUrls: { type: [String] },
   rentedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // User renting the equipment

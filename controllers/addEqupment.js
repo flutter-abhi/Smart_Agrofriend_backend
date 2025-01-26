@@ -78,7 +78,7 @@ const addEquipment = async (req, res) => {
             tags: parsedTags,
             type,
             price,
-            location,
+            location: req.user.location,
             imageUrls
         });
 

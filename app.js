@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+require('./controllers/jobCron'); // Adjust the path to your cron job file
+
 
 const dotenv = require('dotenv').config();
 

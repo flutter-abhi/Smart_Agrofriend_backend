@@ -6,7 +6,7 @@ const authenticateJWT = require('../middelware/authenticateJWT');
 const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('../controllers/jobPost');
 const { applyForJob, getApplications, deleteApplication, approveApplication } = require("../controllers/jobApplicationController")
 const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment } = require("../controllers/addEqupment");
-
+const { createAnimalPost,getAnimalPosts,updateAnimalPost,deleteAnimalPost,autoArchiveExpiredPosts,uploadanimal} = require("../controllers/animalModel")
 ///user authenticated
 
 router.post('/signup', signupController);
@@ -41,3 +41,8 @@ router.post('/equipment/rentEquipment', rentEquipment);
 router.put('/equipment/unrentEquipment', unrentEquipment);
 router.delete('/equipment/deleteEquepment', authenticateJWT, deleteEquipment)
 module.exports = router;
+
+///animalmodel
+
+
+

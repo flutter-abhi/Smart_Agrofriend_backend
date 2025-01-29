@@ -10,7 +10,7 @@ dotenv.config();
 const generateJWT = (userId, role) => {
   const payload = { userId, role };
   const secretKey = process.env.JWT_SECRET || 'your_secret_key'; // Use a secure key
-  const options = { expiresIn: '36h' }; // Token expires in 36 hours
+  const options = { expiresIn: '72h' }; // Token expires in 36 hours
   return jwt.sign(payload, secretKey, options);
 };
 

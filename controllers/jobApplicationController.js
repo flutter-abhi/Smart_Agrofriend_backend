@@ -116,7 +116,7 @@ const getApplications = async (req, res) => {
 const approveApplication = async (req, res) => {
     try {
         const { applicationId } = req.params; // Get application ID from URL params
-        const { userId } = req.user; // Assuming user is authenticated and user ID is available in req.user
+        const { userId } = req.user.userId; // Assuming user is authenticated and user ID is available in req.user
 
         // Find the application
         const application = await JobApplication.findById(applicationId).populate('jobId');

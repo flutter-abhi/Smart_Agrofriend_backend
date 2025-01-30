@@ -132,10 +132,10 @@ const updateApplicationStatus = async (req, res) => {
             return res.status(404).json({ message: 'Job application not found' });
         }
 
-        // Check if the user is the job owner
-        if (application.jobId.farmerId.toString() !== userId) {
-            return res.status(403).json({ message: 'You do not have permission to update this application' });
-        }
+        // // Check if the user is the job owner
+        // if (application.jobId.farmerId.toString() !== userId) {
+        //     return res.status(403).json({ message: 'You do not have permission to update this application' });
+        // }
 
         // Update application status
         application.status = status;

@@ -28,7 +28,7 @@ router.delete('/job-posts/delete', authenticateJWT, deleteJobPost);
 router.post('/applyForJob', applyForJob);
 router.get('/getApplications', authenticateJWT, getApplications);
 router.delete('/deleteApplication', authenticateJWT, deleteApplication);
-router.delete('/approveApplication', authenticateJWT, approveApplication);
+router.put('/approveApplication', authenticateJWT, approveApplication);
 
 
 ///

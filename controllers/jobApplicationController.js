@@ -119,6 +119,7 @@ const updateApplicationStatus = async (req, res) => {
         const { status } = req.body; // Get the new status from request body
         const { userId } = req.user.userId; // Get user ID from authenticated request
 
+        console.log(applicationId, status, userId);
         // Validate status
         const validStatuses = ['pending', 'accepted', 'rejected'];
         if (!validStatuses.includes(status)) {

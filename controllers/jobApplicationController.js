@@ -113,10 +113,17 @@ const getApplications = async (req, res) => {
 
 
 //
-const approveApplication = async (req, res) => {
+const updateApplicationStatus = async (req, res) => {
     try {
-        const { applicationId } = req.params; // Get application ID from URL params
-        const { userId } = req.user.userId; // Assuming user is authenticated and user ID is available in req.user
+        const { applicationId } = req.body; // Get application ID from URL params
+        const { status } = req.body; // Get the new status from request body
+        const { userId } = req.user.userId; // Get user ID from authenticated request
+
+        // Validate status
+        const validStatuses = ['pending', 'accepted', 'rejected'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ message: 'Invalid status provided' });
+        }
 
         // Find the application
         const application = await JobApplication.findById(applicationId).populate('jobId');
@@ -126,22 +133,16 @@ const approveApplication = async (req, res) => {
 
         // Check if the user is the job owner
         if (application.jobId.farmerId.toString() !== userId) {
-            return res.status(403).json({ message: 'You do not have permission to approve this application' });
+            return res.status(403).json({ message: 'You do not have permission to update this application' });
         }
 
-        // Approve the selected application
-        application.status = 'approved';
+        // Update application status
+        application.status = status;
         await application.save();
 
-        // Reject other applications for the same job
-        await JobApplication.updateMany(
-            { jobId: application.jobId._id, _id: { $ne: applicationId } },
-            { status: 'rejected' }
-        );
-
-        res.json({ message: 'Job application approved and others rejected', application });
+        res.json({ message: `Job application status updated to ${status}`, application });
     } catch (error) {
-        res.status(500).json({ error: 'Error approving job application' });
+        res.status(500).json({ error: 'Error updating job application status' });
     }
 };
 
@@ -174,5 +175,5 @@ module.exports = {
     applyForJob,
     getApplications,
     deleteApplication,
-    approveApplication
+    updateApplicationStatus
 };

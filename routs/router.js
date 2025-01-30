@@ -4,7 +4,7 @@ const { signupController, loginController } = require('../controllers/createUser
 const { getProfile, updateUserController, deleteProfile, uploadprof } = require('../controllers/userprofile');
 const authenticateJWT = require('../middelware/authenticateJWT');
 const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('../controllers/jobPost');
-const { applyForJob, getApplications, deleteApplication, approveApplication } = require("../controllers/jobApplicationController")
+const { applyForJob, getApplications, deleteApplication, updateApplicationStatus} = require("../controllers/jobApplicationController")
 const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment } = require("../controllers/addEqupment");
 const { createAnimalPost, getAnimalPosts, updateAnimalPost, deleteAnimalPost, autoArchiveExpiredPosts, uploadanimal } = require("../controllers/animalModel")
 ///user authenticated
@@ -28,7 +28,7 @@ router.delete('/job-posts/delete', authenticateJWT, deleteJobPost);
 router.post('/applyForJob', applyForJob);
 router.get('/getApplications', authenticateJWT, getApplications);
 router.delete('/deleteApplication', authenticateJWT, deleteApplication);
-router.put('/approveApplication', authenticateJWT, approveApplication);
+router.put('/updateApplicationStatus', authenticateJWT, updateApplicationStatus);
 
 
 ///

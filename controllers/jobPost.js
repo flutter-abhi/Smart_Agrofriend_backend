@@ -168,6 +168,7 @@ const deleteJobPost = async (req, res) => {
     try {
         const { id } = req.body; // Job post ID from the URL
         const userId = req.user.userId; // Logged-in user's ID from the JWT token
+        consol.log("delete job post");
         console.log(id);
         console.log(userId);
 

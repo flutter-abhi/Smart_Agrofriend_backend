@@ -165,10 +165,11 @@ const updateJobPost = async (req, res) => {
 
 // Delete a job post
 const deleteJobPost = async (req, res) => {
+    
     try {
         const { id } = req.body; // Job post ID from the URL
         const userId = req.user.userId; // Logged-in user's ID from the JWT token
-        consol.log("delete job post");
+        console.log("delete job post");
         console.log(id);
         console.log(userId);
 
@@ -188,7 +189,7 @@ const deleteJobPost = async (req, res) => {
         await JobPost.findByIdAndDelete(id);
         res.status(200).json({ message: 'Job post deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting job post', error });
+        res.status(500).json({ message: 'Error deleting job post', error: error.message });
     }
 };
 

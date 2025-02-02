@@ -167,7 +167,7 @@ const updateJobPost = async (req, res) => {
 const deleteJobPost = async (req, res) => {
 
     try {
-        const { id } = req.params; // Job post ID from the URL
+        const { id } = req.query; // Job post ID from the URL
         const userId = req.user.userId; // Logged-in user's ID from the JWT token
         console.log("delete job post");
         console.log(id);

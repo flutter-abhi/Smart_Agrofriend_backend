@@ -16,6 +16,14 @@ connectDB();
 // Middleware to handle JSON requests
 app.use(cookieParser());
 app.use(express.json());
+
+app.use((req, res, next) => {
+    if (process.env.APP_MAINTENANCE_MODE === "true") {
+        return res.status(503).send("🚧 Service is temporarily paused. Check back soon! 🚧");
+    }
+    next(); // Continue to normal routes if maintenance mode is off
+});
+
 app.use('/api', router);
 
 

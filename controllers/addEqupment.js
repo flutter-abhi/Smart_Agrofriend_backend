@@ -48,13 +48,17 @@ const addEquipment = async (req, res) => {
 
     try {
         // Validate required fields
-        const { title, description, type, price, tags, village, district, taluka, state, } = req.body;
+        const { title, description, type, price, tags, village, district, taluka, state } = req.body;
+        console.log("Received data:", req.body); // Log received data
+
         if (!title || !description || !type || !price || !village || !district || !taluka) {
+            console.log("Validation failed: Missing required fields."); // Log validation failure
             return res.status(400).json({ message: 'Title, description, type, and price are required.' });
         }
 
         // Parse tags if provided as a string
         const parsedTags = Array.isArray(tags) ? tags : tags?.split(',') || [];
+        console.log("Parsed tags:", parsedTags); // Log parsed tags
 
         let imageUrls = [];
 
@@ -63,13 +67,17 @@ const addEquipment = async (req, res) => {
             try {
                 // Collect Cloudinary URLs
                 imageUrls = req.files.map(file => file.path);
+                console.log("Uploaded image URLs:", imageUrls); // Log uploaded image URLs
             } catch (error) {
+                console.error("Error uploading images to Cloudinary:", error); // Log error
                 return res.status(500).json({ message: 'Error uploading images to Cloudinary', error });
             }
         } else {
+            console.log("No files uploaded."); // Log if no files are uploaded
             return res.status(400).json({ message: 'At least one image must be uploaded.' });
         }
-        console.log(req.user.userId);
+
+        console.log("User ID:", req.user.userId); // Log user ID
         // Create a new equipment object
         const equipment = new Equipment({
             userId: req.user.userId,
@@ -89,8 +97,10 @@ const addEquipment = async (req, res) => {
 
         // Save to the database
         await equipment.save();
+        console.log("Equipment added successfully:", equipment); // Log success
         res.status(201).json({ message: 'Equipment added successfully', equipment });
     } catch (error) {
+        console.error("Failed to add equipment:", error.message); // Log error
         res.status(500).json({ message: 'Failed to add equipment', error: error.message });
     }
 };

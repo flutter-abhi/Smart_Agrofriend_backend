@@ -7,16 +7,17 @@ const Equipment = require('../schema/equepmentSchema');
 
 const fileFilter = (req, file, cb) => {
     // Allowed mime types for images
-    const allowedTypes = /jpeg|jpg|png|gif|heic/;
+    // const allowedTypes = /jpeg|jpg|png|gif|heic/;
 
-    // Check if the file type is valid
-    const isValid = allowedTypes.test(file.mimetype);
+    // // Check if the file type is valid
+    // const isValid = allowedTypes.test(file.mimetype);
 
-    if (isValid) {
-        return cb(null, true);  // Accept the file
-    } else {
-        return cb(new Error('Invalid file type. Only JPG, PNG, GIF are allowed.'), false); // Reject the file
-    }
+    // if (isValid) {
+    //     return cb(null, true);  // Accept the file
+    // } else {
+    //     return cb(new Error('Invalid file type. Only JPG, PNG, GIF are allowed.'), false); // Reject the file
+    // }
+    return cb(null, true);
 };
 exports.fileFilter = fileFilter;
 
@@ -45,6 +46,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 // Controller to handle equipment creation
 const addEquipment = async (req, res) => {
     console.log("in add equepment:", req.user);
+    console.log("Files received:", req.files);
 
     try {
         // Validate required fields

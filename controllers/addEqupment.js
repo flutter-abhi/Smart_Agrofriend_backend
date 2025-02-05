@@ -48,8 +48,8 @@ const addEquipment = async (req, res) => {
 
     try {
         // Validate required fields
-        const { title, description, type, price, location, tags } = req.body;
-        if (!title || !description || !type || !price) {
+        const { title, description, type, price, tags, village, district, taluka, state, } = req.body;
+        if (!title || !description || !type || !price || !village || !district || !taluka) {
             return res.status(400).json({ message: 'Title, description, type, and price are required.' });
         }
 
@@ -78,7 +78,12 @@ const addEquipment = async (req, res) => {
             tags: parsedTags,
             type,
             price,
-            location: req.user.location,
+            location: {
+                village,
+                district,
+                taluka,
+                state: state || 'maharastra', // Default state is Maharashtra
+            },
             imageUrls
         });
 
@@ -113,8 +118,8 @@ const getEquipmentByUser = async (req, res) => {
 
         console.log('Query Object:', query); // Debugging: Log the query object
 
-        // Fetch equipment from the database based on the query
-        const equipment = await Equipment.find(query);
+        // Fetch equipment from the database based on the query and populate userId
+        const equipment = await Equipment.find(query).populate('userId');
 
         // Return the results
         res.status(200).json({

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const User = require('./UserSchema'); // Import the User schema
 const equipmentSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Owner of the equipment
   title: { type: String, required: true },

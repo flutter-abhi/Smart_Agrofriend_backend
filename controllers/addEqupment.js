@@ -6,18 +6,20 @@ const Equipment = require('../schema/equepmentSchema');
 
 
 const fileFilter = (req, file, cb) => {
+    console.log(file);
+
     // Allowed mime types for images
-    // const allowedTypes = /jpeg|jpg|png|gif|heic/;
+    const allowedTypes = /jpeg|jpg|png|gif|heic/;
 
-    // // Check if the file type is valid
-    // const isValid = allowedTypes.test(file.mimetype);
+    // Check if the file type is valid
+    const isValid = allowedTypes.test(file.mimetype);
 
-    // if (isValid) {
-    //     return cb(null, true);  // Accept the file
-    // } else {
-    //     return cb(new Error('Invalid file type. Only JPG, PNG, GIF are allowed.'), false); // Reject the file
-    // }
-    return cb(null, true);
+    if (isValid) {
+        return cb(null, true);  // Accept the file
+    } else {
+        return cb(new Error('Invalid file type. Only JPG, PNG, GIF are allowed.'), false); // Reject the file
+    }
+
 };
 exports.fileFilter = fileFilter;
 

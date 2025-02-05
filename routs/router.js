@@ -35,7 +35,7 @@ router.put('/updateApplicationStatus', authenticateJWT, updateApplicationStatus)
 //equpment 
 
 //
-router.post('/equipment/addEquipment', authenticateJWT, upload.array('images', 3), addEquipment)
+router.post('/equipment/addEquipment', authenticateJWT,  upload.array('images', 3), addEquipment)
 router.get('/equipment/getEquipment', getEquipmentByUser);
 router.post('/equipment/rentEquipment', rentEquipment);
 router.put('/equipment/unrentEquipment', unrentEquipment);
@@ -43,7 +43,7 @@ router.delete('/equipment/deleteEquepment', authenticateJWT, deleteEquipment)
 router.put('/equipment/avalibility', authenticateJWT, toggleEquipmentAvailability)
 module.exports = router;
 
-///animalmodel
+
 
 
 

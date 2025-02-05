@@ -4,8 +4,8 @@ const { signupController, loginController } = require('../controllers/createUser
 const { getProfile, updateUserController, deleteProfile, uploadprof } = require('../controllers/userprofile');
 const authenticateJWT = require('../middelware/authenticateJWT');
 const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('../controllers/jobPost');
-const { applyForJob, getApplications, deleteApplication, updateApplicationStatus} = require("../controllers/jobApplicationController")
-const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment } = require("../controllers/addEqupment");
+const { applyForJob, getApplications, deleteApplication, updateApplicationStatus } = require("../controllers/jobApplicationController")
+const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment, toggleEquipmentAvailability } = require("../controllers/addEqupment");
 const { createAnimalPost, getAnimalPosts, updateAnimalPost, deleteAnimalPost, autoArchiveExpiredPosts, uploadanimal } = require("../controllers/animalModel")
 ///user authenticated
 
@@ -40,6 +40,7 @@ router.get('/equipment/getEquipment', getEquipmentByUser);
 router.post('/equipment/rentEquipment', rentEquipment);
 router.put('/equipment/unrentEquipment', unrentEquipment);
 router.delete('/equipment/deleteEquepment', authenticateJWT, deleteEquipment)
+router.put('/equipment/avalibility', authenticateJWT, toggleEquipmentAvailability)
 module.exports = router;
 
 ///animalmodel

@@ -255,8 +255,38 @@ const searchEquipment = async (req, res) => {
     }
 };
 
+const toggleEquipmentAvailability = async (req, res) => {
+    try {
+        const { equipmentId, available } = req.body; // Get equipment ID and availability status
 
+        // Find the equipment
+        const equipment = await Equipment.findById(equipmentId);
 
+        if (!equipment) {
+            return res.status(404).json({ success: false, message: 'Equipment not found.' });
+        }
+
+        // Update the equipment availability
+        if (available) {
+            equipment.rentedBy = null;
+            equipment.rentStartDate = null;
+            equipment.rentEndDate = null;
+            equipment.available = true; // Mark as available
+        } else {
+            equipment.available = false; // Mark as unavailable
+        }
+
+        await equipment.save();
+
+        res.status(200).json({
+            success: true,
+            message: `Equipment is now ${available ? 'available' : 'unavailable'}.`,
+            data: equipment
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error updating equipment availability.', error: error.message });
+    }
+};
 
 module.exports = {
     upload,
@@ -264,5 +294,6 @@ module.exports = {
     getEquipmentByUser,
     rentEquipment,
     unrentEquipment,
-    deleteEquipment
+    deleteEquipment,
+    toggleEquipmentAvailability
 };

@@ -69,10 +69,10 @@ const addEquipment = async (req, res) => {
         } else {
             return res.status(400).json({ message: 'At least one image must be uploaded.' });
         }
-
+        console.log(req.user.userId);
         // Create a new equipment object
         const equipment = new Equipment({
-            userId: req.user.id,
+            userId: req.user.userId,
             title,
             description,
             tags: parsedTags,

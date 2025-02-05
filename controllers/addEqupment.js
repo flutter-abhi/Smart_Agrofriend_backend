@@ -51,9 +51,18 @@ const addEquipment = async (req, res) => {
         const { title, description, type, price, tags, village, district, taluka, state } = req.body;
         console.log("Received data:", req.body); // Log received data
 
-        if (!title || !description || !type || !price || !village || !district || !taluka) {
-            console.log("Validation failed: Missing required fields."); // Log validation failure
-            return res.status(400).json({ message: 'Title, description, type, and price are required.' });
+        const missingFields = [];
+        if (!title) missingFields.push('Title');
+        if (!description) missingFields.push('Description');
+        if (!type) missingFields.push('Type');
+        if (!price) missingFields.push('Price');
+        if (!village) missingFields.push('Village');
+        if (!district) missingFields.push('District');
+        if (!taluka) missingFields.push('Taluka');
+
+        if (missingFields.length > 0) {
+            console.log("Validation failed: Missing required fields:", missingFields); // Log validation failure
+            return res.status(400).json({ message: `${missingFields.join(', ')} ${missingFields.length > 1 ? 'are' : 'is'} required.` });
         }
 
         // Parse tags if provided as a string

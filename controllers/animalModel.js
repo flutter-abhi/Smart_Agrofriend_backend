@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'user_profile',  // Specify the folder in Cloudinary
+        folder: 'Animal',  // Specify the folder in Cloudinary
         format: (req, file) => {
             // Automatically set the file format based on file type
             const fileExtension = file.mimetype.split('/')[1];  // jpeg, png, gif, etc.
@@ -37,24 +37,39 @@ const storage = new CloudinaryStorage({
 const uploadanimal = multer({ storage: storage, fileFilter: fileFilter });
 
 const createAnimalPost = async (req, res) => {
-    const {
-        name,
-        age,
-        breed,
-        price,
-        description,
-        tags,
-        images,
-        village,
-        district,
-        taluka,
-        state,
-        archiveDate,
-    } = req.body;
-
-    const sellerId = req.user.userId; // Logged-in user's ID
+    console.log("in create animal post:", req.user);
+    console.log("Files received:", req.files);
 
     try {
+        // Validate required fields
+        const { name, age, breed, price, description, tags, village, district, taluka, state } = req.body;
+        const missingFields = [];
+        if (!name) missingFields.push('Name');
+        if (!age) missingFields.push('Age');
+        if (!breed) missingFields.push('Breed');
+        if (!price) missingFields.push('Price');
+        if (!description) missingFields.push('Description');
+        if (!village) missingFields.push('Village');
+        if (!district) missingFields.push('District');
+        if (!taluka) missingFields.push('Taluka');
+
+        if (missingFields.length > 0) {
+            console.log("Validation failed: Missing required fields:", missingFields);
+            return res.status(400).json({ message: `${missingFields.join(', ')} ${missingFields.length > 1 ? 'are' : 'is'} required.` });
+        }
+
+        // Handle images if uploaded
+        let imageUrls = [];
+        if (req.files && req.files.length > 0) {
+            imageUrls = req.files.map(file => file.path);
+            console.log("Uploaded image URLs:", imageUrls);
+        } else {
+            console.log("No files uploaded.");
+            return res.status(400).json({ message: 'At least one image must be uploaded.' });
+        }
+
+        const sellerId = req.user.userId; // Logged-in user's ID
+
         const newAnimalPost = new Animal({
             sellerId,
             name,
@@ -63,7 +78,7 @@ const createAnimalPost = async (req, res) => {
             price,
             description,
             tags,
-            images,
+            images: imageUrls, // Use the uploaded image URLs
             location: {
                 village,
                 district,

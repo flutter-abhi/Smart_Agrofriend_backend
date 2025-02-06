@@ -6,7 +6,7 @@ const authenticateJWT = require('../middelware/authenticateJWT');
 const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('../controllers/jobPost');
 const { applyForJob, getApplications, deleteApplication, updateApplicationStatus } = require("../controllers/jobApplicationController")
 const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment, toggleEquipmentAvailability } = require("../controllers/addEqupment");
-const { createAnimalPost, getAnimalPosts, updateAnimalPost, deleteAnimalPost, autoArchiveExpiredPosts, uploadanimal } = require("../controllers/animalModel")
+const animalControllers = require('../controllers/animalModel');
 ///user authenticated
 
 router.post('/signup', signupController);
@@ -35,12 +35,19 @@ router.put('/updateApplicationStatus', authenticateJWT, updateApplicationStatus)
 //equpment 
 
 //
-router.post('/equipment/addEquipment', authenticateJWT,  upload.array('images', 3), addEquipment)
+router.post('/equipment/addEquipment', authenticateJWT, upload.array('images', 3), addEquipment)
 router.get('/equipment/getEquipment', getEquipmentByUser);
 router.post('/equipment/rentEquipment', rentEquipment);
 router.put('/equipment/unrentEquipment', unrentEquipment);
 router.delete('/equipment/deleteEquepment', authenticateJWT, deleteEquipment)
 router.put('/equipment/avalibility', authenticateJWT, toggleEquipmentAvailability)
+
+// Animal routes
+router.post('/animal/create', authenticateJWT, animalControllers.uploadanimal.array('images', 3), animalControllers.createAnimalPost);
+router.get('/animal/get', animalControllers.getAnimalPosts);
+router.put('/animal/update', authenticateJWT, animalControllers.updateAnimalPost);
+router.delete('/animal/delete', authenticateJWT, animalControllers.deleteAnimalPost);
+
 module.exports = router;
 
 

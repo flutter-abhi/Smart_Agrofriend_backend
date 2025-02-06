@@ -2,7 +2,7 @@ const User = require('../schema/UserSchema');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-
+const { getLatLon } = require('./getlocation');
 
 dotenv.config();
 
@@ -33,6 +33,9 @@ const signupController = async (req, res) => {
       hashedPassword = await bcrypt.hash(password, 10); // Hash password using bcrypt
     }
 
+    // Get latitude and longitude
+    const { latitude, longitude } = await getLatLon(village, taluka, district, state) || {};
+
     // Create and save the user in the database
     const newUser = new User({
       fullName: name,
@@ -44,6 +47,8 @@ const signupController = async (req, res) => {
         district,
         taluka,
         state,
+        lat: latitude, // Add latitude
+        lon: longitude, // Add longitude
       },
     });
 

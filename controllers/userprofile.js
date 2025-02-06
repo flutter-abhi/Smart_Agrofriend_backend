@@ -2,6 +2,7 @@ const { v2: cloudinary } = require('cloudinary');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const User = require('../schema/UserSchema');
 const multer = require('multer');
+const axios = require('axios');
 
 
 const getProfile = async (req, res) => {
@@ -114,9 +115,19 @@ const calculateSimilarityScore = (user1, user2) => {
     return score;
 };
 
+
+
 const getAllUsers = async (req, res) => {
     try {
-        const { userId } = req.query; // Get user ID from request
+        console.log(req.user);
+
+        const userId = req.user.userId;
+
+
+
+
+
+        // Get user ID from request
         if (!userId) {
             return res.status(400).json({ message: "User ID is required." });
         }
@@ -127,8 +138,12 @@ const getAllUsers = async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
+        const location = await getLatLon(requestUser.location.village, requestUser.location.taluka, requestUser.location.district, requestUser.location.state);
+
+        console.log(location);
         // Fetch all users
         const users = await User.find({ _id: { $ne: userId } }).lean();
+
 
         // Calculate similarity score for each user
         const usersWithMetrics = users.map(user => {
@@ -144,5 +159,25 @@ const getAllUsers = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+const getLatLon = async (village, taluka, district, state) => {
+    const address = `${village}, ${taluka}, ${district}, ${state}, India`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+
+    try {
+        const response = await axios.get(url);
+        if (response.data.length > 0) {
+            const { lat, lon } = response.data[0];
+            return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+        } else {
+            console.error("❌ No results found for address:", address);
+            return null;
+        }
+    } catch (error) {
+        console.error("❌ Error fetching location:", error.message);
+        return null;
+    }
+};
+
 
 module.exports = { getProfile, updateUserController, deleteProfile, uploadprof, getAllUsers };

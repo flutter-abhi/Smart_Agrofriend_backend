@@ -106,14 +106,6 @@ const updateUserController = async (req, res) => {
 };
 
 //haversineDistance
-const calculateSimilarityScore = (user1, user2) => {
-    let score = 0;
-    if (user1.location.state === user2.location.state) score += 1;
-    if (user1.location.district === user2.location.district) score += 2;
-    if (user1.location.taluka === user2.location.taluka) score += 3;
-    if (user1.location.village === user2.location.village) score += 4;
-    return score;
-};
 
 
 
@@ -122,11 +114,6 @@ const getAllUsers = async (req, res) => {
         console.log(req.user);
 
         const userId = req.user.userId;
-
-
-
-
-
         // Get user ID from request
         if (!userId) {
             return res.status(400).json({ message: "User ID is required." });
@@ -138,21 +125,40 @@ const getAllUsers = async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        const location = await getLatLon(requestUser.location.village, requestUser.location.taluka, requestUser.location.district, requestUser.location.state);
-
-        console.log(location);
         // Fetch all users
         const users = await User.find({ _id: { $ne: userId } }).lean();
 
+        // Function to calculate distance between two points (lat/lon)
+        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+            const R = 6371; // Radius of the Earth in km
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in km
+        };
 
-        // Calculate similarity score for each user
+        // Calculate distance for each user
         const usersWithMetrics = users.map(user => {
-            let similarityScore = calculateSimilarityScore(requestUser, user);
-            return { ...user, similarityScore };
+            // Check if both users have latitude and longitude
+            if (requestUser.location.lat && requestUser.location.lon && user.location.lat && user.location.lon) {
+                const distance = calculateDistance(requestUser.location.lat, requestUser.location.lon, user.location.lat, user.location.lon);
+                return { ...user, distance };
+            } else {
+                // If lat/lon is missing, set distance to null or a large number
+                return { ...user, distance: null }; // or use Infinity for sorting
+            }
         });
 
-        // Sort by similarity score (higher is closer)
-        usersWithMetrics.sort((a, b) => b.similarityScore - a.similarityScore);
+        // Sort by distance (closest first), placing users without distance at the end
+        usersWithMetrics.sort((a, b) => {
+            if (a.distance === null) return 1; // Move users without distance to the end
+            if (b.distance === null) return -1; // Move users without distance to the end
+            return a.distance - b.distance; // Sort by distance
+        });
 
         res.json(usersWithMetrics);
     } catch (error) {
@@ -160,24 +166,7 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-const getLatLon = async (village, taluka, district, state) => {
-    const address = `${village}, ${taluka}, ${district}, ${state}, India`;
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
 
-    try {
-        const response = await axios.get(url);
-        if (response.data.length > 0) {
-            const { lat, lon } = response.data[0];
-            return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
-        } else {
-            console.error("❌ No results found for address:", address);
-            return null;
-        }
-    } catch (error) {
-        console.error("❌ Error fetching location:", error.message);
-        return null;
-    }
-};
 
 
 module.exports = { getProfile, updateUserController, deleteProfile, uploadprof, getAllUsers };

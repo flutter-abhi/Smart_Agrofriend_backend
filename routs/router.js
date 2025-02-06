@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { signupController, loginController } = require('../controllers/createUser');
-const { getProfile, updateUserController, deleteProfile, uploadprof } = require('../controllers/userprofile');
+const { getProfile, updateUserController, deleteProfile, uploadprof, getAllUsers } = require('../controllers/userprofile');
 const authenticateJWT = require('../middelware/authenticateJWT');
 const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('../controllers/jobPost');
 const { applyForJob, getApplications, deleteApplication, updateApplicationStatus } = require("../controllers/jobApplicationController")
@@ -16,6 +16,7 @@ router.post('/login', loginController);
 router.get('/profile', authenticateJWT, getProfile);
 router.put('/profile', authenticateJWT, uploadprof.single('profileImage'), updateUserController);
 router.delete('/profile', authenticateJWT, deleteProfile);
+router.get('/getAllUser', authenticateJWT, getAllUsers);
 
 ///job post
 router.post('/job-posts/create', authenticateJWT, createJobPost);

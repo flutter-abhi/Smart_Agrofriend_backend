@@ -6,7 +6,7 @@ const equipmentSchema = new mongoose.Schema({
   description: { type: String, required: true },
   tags: { type: [String] },
   type: { type: String, enum: ['rent', 'buy'], required: true },
-  price: { type: Number, required: true },
+  price: { type: String, required: true },
   location: {
     village: { type: String, required: true }, // Village name
     district: { type: String, required: true }, // District name

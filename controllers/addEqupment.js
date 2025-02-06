@@ -231,7 +231,7 @@ const deleteEquipment = async (req, res) => {
     console.log("in delete equepment", req.user);
     try {
 
-        const { equipmentId } = req.body;
+        const { equipmentId } = req.query;
 
         // Check if equipmentId is provided
         if (!equipmentId) {

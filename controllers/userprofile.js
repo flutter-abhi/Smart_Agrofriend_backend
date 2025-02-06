@@ -104,5 +104,45 @@ const updateUserController = async (req, res) => {
     }
 };
 
+//haversineDistance
+const calculateSimilarityScore = (user1, user2) => {
+    let score = 0;
+    if (user1.location.state === user2.location.state) score += 1;
+    if (user1.location.district === user2.location.district) score += 2;
+    if (user1.location.taluka === user2.location.taluka) score += 3;
+    if (user1.location.village === user2.location.village) score += 4;
+    return score;
+};
 
-module.exports = { getProfile, updateUserController, deleteProfile, uploadprof };
+const getAllUsers = async (req, res) => {
+    try {
+        const { userId } = req.query; // Get user ID from request
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required." });
+        }
+
+        // Find the requesting user's location
+        const requestUser = await User.findById(userId);
+        if (!requestUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Fetch all users
+        const users = await User.find({ _id: { $ne: userId } }).lean();
+
+        // Calculate similarity score for each user
+        const usersWithMetrics = users.map(user => {
+            let similarityScore = calculateSimilarityScore(requestUser, user);
+            return { ...user, similarityScore };
+        });
+
+        // Sort by similarity score (higher is closer)
+        usersWithMetrics.sort((a, b) => b.similarityScore - a.similarityScore);
+
+        res.json(usersWithMetrics);
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+module.exports = { getProfile, updateUserController, deleteProfile, uploadprof, getAllUsers };

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
 
-  role: { type: String, enum: ['laborer', 'farmer', 'admin'], required: true },
+  role: { type: String, enum: ['labour', 'farmer', 'admin'], required: true },
   password: { type: String }, // Optional, for non-OAuth login
   fullName: { type: String },
   phoneNumber: { type: String, unique: true },

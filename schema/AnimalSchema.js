@@ -14,6 +14,8 @@ const animalSchema = new mongoose.Schema({
     district: { type: String, required: true },
     taluka: { type: String, required: true },
     state: { type: String, default: 'Maharashtra' },
+    lat: { type: Number }, // Latitude
+    lon: { type: Number }  // Longitude
   },
   status: { type: String, enum: ['available', 'sold', 'archived'], default: 'available' }, // Animal status
   postDate: { type: Date, default: Date.now }, // When the post was created

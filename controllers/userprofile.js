@@ -61,8 +61,10 @@ const storage = new CloudinaryStorage({
 const uploadprof = multer({ storage: storage, fileFilter: fileFilter });
 
 const updateUserController = async (req, res) => {
+
     const userId = req.user.userId; // User ID from authentication middleware
     let updates = req.body; // User-provided updates
+
 
     try {
         // Check if req.body is parsed as an object

@@ -2,6 +2,7 @@ const cloudinary = require('../config/cloudinnery');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const Equipment = require('../schema/equepmentSchema');
+const { getLatLon } = require('./getlocation');
 
 
 
@@ -89,6 +90,7 @@ const addEquipment = async (req, res) => {
             console.log("No files uploaded."); // Log if no files are uploaded
             return res.status(400).json({ message: 'At least one image must be uploaded.' });
         }
+        const { latitude, longitude } = await getLatLon(village, taluka, district, state) || {};
 
         console.log("User ID:", req.user.userId); // Log user ID
         // Create a new equipment object
@@ -104,6 +106,10 @@ const addEquipment = async (req, res) => {
                 district,
                 taluka,
                 state: state || 'maharastra', // Default state is Maharashtra
+                lat: latitude, // Add latitude
+                lon: longitude, // Add longitude
+
+
             },
             imageUrls
         });

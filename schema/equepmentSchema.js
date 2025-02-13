@@ -11,7 +11,9 @@ const equipmentSchema = new mongoose.Schema({
     village: { type: String, required: true }, // Village name
     district: { type: String, required: true }, // District name
     taluka: { type: String, required: true },
-    state: { type: String, required: true }
+    state: { type: String, required: true },
+    lat: { type: Number }, // Latitude
+    lon: { type: Number }
   },
   available: { type: Boolean, default: true },
   imageUrls: { type: [String] },

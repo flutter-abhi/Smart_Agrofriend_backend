@@ -2,6 +2,7 @@ const { v2: cloudinary } = require('cloudinary');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const Animal = require('../schema/AnimalSchema'); // Import the Animal model
+const { getLatLon } = require('./getlocation');
 
 const fileFilter = (req, file, cb) => {
     // Allowed mime types for images
@@ -69,6 +70,7 @@ const createAnimalPost = async (req, res) => {
         }
 
         const sellerId = req.user.userId; // Logged-in user's ID
+        const { latitude, longitude } = await getLatLon(village, taluka, district, state) || {};
 
         const newAnimalPost = new Animal({
             sellerId,
@@ -84,6 +86,10 @@ const createAnimalPost = async (req, res) => {
                 district,
                 taluka,
                 state,
+                lat: latitude, // Add latitude
+                lon: longitude, // Add longitude
+
+
             },
             archiveDate,
         });
@@ -119,9 +125,38 @@ const getAnimalPosts = async (req, res) => {
         // Tag filtering
         if (tags) filter.tags = { $in: tags.split(',') }; // Supports multiple tags
 
-        const animalPosts = await Animal.find(filter);
+        const animalPosts = await Animal.find(filter).lean();
 
-        res.status(200).json(animalPosts);
+        // Function to calculate distance between two points (lat/lon)
+        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+            const R = 6371; // Radius of the Earth in km
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in km
+        };
+
+        // Assuming the user's location is provided in the request
+        const userLocation = req.user.location; // Get user's location from request
+        if (userLocation && userLocation.lat && userLocation.lon) {
+            // Calculate distance for each animal post
+            const animalPostsWithDistance = animalPosts.map(post => {
+                const distance = calculateDistance(userLocation.lat, userLocation.lon, post.location.lat, post.location.lon);
+                return { ...post, distance };
+            });
+
+            // Sort by distance (closest first)
+            animalPostsWithDistance.sort((a, b) => a.distance - b.distance);
+
+            res.status(200).json(animalPostsWithDistance);
+        } else {
+            // If user location is not provided, return the posts without sorting
+            res.status(200).json(animalPosts);
+        }
     } catch (error) {
         res.status(500).json({
             message: 'Error fetching animal posts',

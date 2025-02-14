@@ -72,6 +72,9 @@ const createAnimalPost = async (req, res) => {
         const sellerId = req.user.userId; // Logged-in user's ID
         const { latitude, longitude } = await getLatLon(village, taluka, district, state) || {};
 
+        const archiveDate = new Date(); // Set the archive date to now or calculate a future date
+        archiveDate.setDate(archiveDate.getDate() + 10); // Example: set to 30 days from now
+
         const newAnimalPost = new Animal({
             sellerId,
             name,

@@ -119,11 +119,11 @@ const getAnimalPosts = async (req, res) => {
         if (status) filter.status = status;
         if (sellerId) filter.sellerId = sellerId;
 
-        // Location filtering
-        if (village) filter['location.village'] = village;
-        if (district) filter['location.district'] = district;
-        if (taluka) filter['location.taluka'] = taluka;
-        if (state) filter['location.state'] = state;
+        // // Location filtering
+        // if (village) filter['location.village'] = village;
+        // if (district) filter['location.district'] = district;
+        // if (taluka) filter['location.taluka'] = taluka;
+        // if (state) filter['location.state'] = state;
 
         // Tag filtering
         if (tags) filter.tags = { $in: tags.split(',') }; // Supports multiple tags

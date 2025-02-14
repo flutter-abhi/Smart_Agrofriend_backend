@@ -3,6 +3,7 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const Animal = require('../schema/AnimalSchema'); // Import the Animal model
 const { getLatLon } = require('./getlocation');
+const User = require('../schema/UserSchema'); // Import the User model
 
 const fileFilter = (req, file, cb) => {
     // Allowed mime types for images
@@ -143,8 +144,10 @@ const getAnimalPosts = async (req, res) => {
             return R * c; // Distance in km
         };
 
-        // Assuming the user's location is provided in the request
-        const userLocation = req.user.location; // Get user's location from request
+        const userId = req.user.userId; // Get the logged-in user's ID
+        const user = await User.findById(userId); // Find the user by ID
+        const userLocation = user.location;
+
         if (userLocation && userLocation.lat && userLocation.lon) {
             // Calculate distance for each animal post
             const animalPostsWithDistance = animalPosts.map(post => {

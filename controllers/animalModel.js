@@ -144,8 +144,10 @@ const getAnimalPosts = async (req, res) => {
             return R * c; // Distance in km
         };
 
-        const userId = req.user.userId; // Get the logged-in user's ID
-        const user = await User.findById(userId); // Find the user by ID
+        console.log(req.user);
+        const userId = req.user.userId;
+
+        const user = await User.findById(userId);
         const userLocation = user.location;
 
         if (userLocation && userLocation.lat && userLocation.lon) {

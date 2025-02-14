@@ -45,7 +45,7 @@ router.put('/equipment/avalibility', authenticateJWT, toggleEquipmentAvailabilit
 
 // Animal routes
 router.post('/animal/create', authenticateJWT, animalControllers.uploadanimal.array('images', 3), animalControllers.createAnimalPost);
-router.get('/animal/get', animalControllers.getAnimalPosts);
+router.get('/animal/get', authenticateJWT, animalControllers.getAnimalPosts);
 router.put('/animal/update', authenticateJWT, animalControllers.updateAnimalPost);
 router.delete('/animal/delete', authenticateJWT, animalControllers.deleteAnimalPost);
 

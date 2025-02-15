@@ -57,6 +57,7 @@ const createAnimalPost = async (req, res) => {
 
         if (missingFields.length > 0) {
             console.log("Validation failed: Missing required fields:", missingFields);
+            
             return res.status(400).json({ message: `${missingFields.join(', ')} ${missingFields.length > 1 ? 'are' : 'is'} required.` });
         }
 
@@ -210,7 +211,7 @@ const updateAnimalPost = async (req, res) => {
 
 
 const deleteAnimalPost = async (req, res) => {
-    const { id } = req.body;
+    const { id } = req.query;
 
     try {
         const animalPost = await Animal.findById(id);

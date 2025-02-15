@@ -7,6 +7,7 @@ const { createJobPost, getJobPosts, updateJobPost, deleteJobPost } = require('..
 const { applyForJob, getApplications, deleteApplication, updateApplicationStatus } = require("../controllers/jobApplicationController")
 const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment, toggleEquipmentAvailability } = require("../controllers/addEqupment");
 const animalControllers = require('../controllers/animalModel');
+const { createFCMToken, updateFCMToken } = require('../controllers/notification');
 ///user authenticated
 
 router.post('/signup', signupController);
@@ -48,5 +49,11 @@ router.post('/animal/create', authenticateJWT, animalControllers.uploadanimal.ar
 router.get('/animal/get', authenticateJWT, animalControllers.getAnimalPosts);
 router.put('/animal/update', authenticateJWT, animalControllers.updateAnimalPost);
 router.delete('/animal/delete', authenticateJWT, animalControllers.deleteAnimalPost);
+
+
+
+/// FCM Token routes
+router.post('/fcm/create', createFCMToken);
+router.put('/fcm/update', updateFCMToken);
 
 module.exports = router;

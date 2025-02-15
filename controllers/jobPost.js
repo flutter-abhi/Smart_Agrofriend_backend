@@ -23,21 +23,21 @@ const createJobPost = async (req, res) => {
     const farmerId = req.user.userId ?? req.user.id; // Assuming user ID is attached after authentication
 
     try {
-        console.log({
-            title,
-            description,
-            pay,
-            village,
-            district,
-            taluka,
-            state,
-            skillsRequired,
-            labours_req,
-            startDate,
-            endDate,
-            deadline,
-            workType
-        }); // Log all fields before validation
+        // console.log({
+        //     title,
+        //     description,
+        //     pay,
+        //     village,
+        //     district,
+        //     taluka,
+        //     state,
+        //     skillsRequired,
+        //     labours_req,
+        //     startDate,
+        //     endDate,
+        //     deadline,
+        //     workType
+        // }); // Log all fields before validation
 
         // Validate required fields
         if (!title || !description || !pay || !village || !district || !taluka || !startDate || !endDate) {

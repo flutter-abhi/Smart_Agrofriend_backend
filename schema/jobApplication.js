@@ -8,4 +8,11 @@ const jobApplicationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Add cascading delete functionality
+jobApplicationSchema.pre('remove', async function (next) {
+  await this.model('JobApplication').deleteMany({ jobId: this.jobId });
+  await this.model('JobApplication').deleteMany({ applicantId: this.applicantId });
+  next();
+});
+
 module.exports = mongoose.model('JobApplication', jobApplicationSchema);

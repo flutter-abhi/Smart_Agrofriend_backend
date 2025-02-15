@@ -2,21 +2,26 @@ const admin = require("../config/firebaseAdmin"); // Import Firebase Admin
 const User = require("../schema/UserSchema"); // Import User model
 const Notification = require("../schema/NotificationSchema"); // Import Notification model
 
-const sendNotification = async (userId, title, body) => {
+const sendNotification = async (req, res) => {
     try {
+        const { userId, title, body } = req.body; // Extract data from request body
+        // console.log(userId);
+        // console.log(title);
+        // console.log(body);
+
         // Validate input
         if (!userId || !title || !body) {
-            throw new Error("User ID, title, and body are required");
+            return res.status(400).json({ message: "User ID, title, and body are required" });
         }
 
-        // Fetch user FCM Token
-        const user = await User.findById(userId);
-        if (!user || !user.fcmToken) {
-            throw new Error("User not found or FCM token missing");
+        // Fetch user FCM Token from Notification schema
+        const notification = await Notification.findOne({ userId });
+        if (!notification || !notification.fcmToken) {
+            return res.status(404).json({ message: "Notification not found or FCM token missing" });
         }
 
         const message = {
-            token: user.fcmToken, // Target device token
+            token: notification.fcmToken, // Target device token
             notification: {
                 title,
                 body,
@@ -25,12 +30,13 @@ const sendNotification = async (userId, title, body) => {
         };
 
         // Send notification
-        await admin.messaging().send(message);
+        const msgResponse = await admin.messaging().send(message);
+        console.log('msg response ', msgResponse);
         console.log(`Notification sent to user ${userId}: ${title} - ${body}`);
-        return { message: "Notification sent successfully" };
+        return res.status(200).json({ message: "Notification sent successfully" });
     } catch (error) {
         console.error("Error sending notification:", error);
-        throw new Error("Error sending notification");
+        return res.status(500).json({ error: "Error sending notification" });
     }
 };
 

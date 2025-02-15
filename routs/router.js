@@ -8,6 +8,7 @@ const { applyForJob, getApplications, deleteApplication, updateApplicationStatus
 const { upload, addEquipment, getEquipmentByUser, rentEquipment, unrentEquipment, deleteEquipment, toggleEquipmentAvailability } = require("../controllers/addEqupment");
 const animalControllers = require('../controllers/animalModel');
 const { createFCMToken, updateFCMToken } = require('../controllers/notification');
+const { sendNotification } = require('../controllers/notification');
 ///user authenticated
 
 router.post('/signup', signupController);
@@ -55,5 +56,6 @@ router.delete('/animal/delete', authenticateJWT, animalControllers.deleteAnimalP
 /// FCM Token routes
 router.post('/fcm/create', createFCMToken);
 router.put('/fcm/update', updateFCMToken);
+router.post('/fcm/send', sendNotification);
 
 module.exports = router;

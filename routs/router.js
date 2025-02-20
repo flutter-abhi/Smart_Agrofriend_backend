@@ -10,6 +10,7 @@ const animalControllers = require('../controllers/animalModel');
 const { createFCMToken, updateFCMToken } = require('../controllers/notification');
 const { sendNotification } = require('../controllers/notification');
 ///user authenticated
+const { signupcontroller} = require('../controllers/lalitcontroller');
 
 router.post('/signup', signupController);
 router.post('/login', loginController);
@@ -57,5 +58,7 @@ router.delete('/animal/delete', authenticateJWT, animalControllers.deleteAnimalP
 router.post('/fcm/create', createFCMToken);
 router.put('/fcm/update', updateFCMToken);
 router.post('/fcm/send', sendNotification);
+
+router.post('/lsignup', signupcontroller);
 
 module.exports = router;

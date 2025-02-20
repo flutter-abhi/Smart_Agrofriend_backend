@@ -70,6 +70,8 @@ const updateFCMToken = async (req, res) => {
     }
 };
 
+
+
 module.exports = {
     sendNotification,
     createFCMToken,

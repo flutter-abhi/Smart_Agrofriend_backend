@@ -129,6 +129,11 @@ const getEquipmentByUser = async (req, res) => {
     try {
         const { userId, available, type, location } = req.query;
 
+        console.log("userId:", userId);
+        console.log("available:", available);
+        console.log("type:", type);
+        console.log("location:", location);
+
         // Build the query object dynamically
         const query = {};
 

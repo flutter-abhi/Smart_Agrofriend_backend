@@ -3,6 +3,7 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const Equipment = require('../schema/equepmentSchema');
 const { getLatLon } = require('./getlocation');
+const mongoose = require('mongoose');
 
 
 

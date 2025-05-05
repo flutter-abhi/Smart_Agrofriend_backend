@@ -139,7 +139,7 @@ const getEquipmentByUser = async (req, res) => {
         const query = {};
 
         if (userId) {
-            query.userId = mongoose.Types.ObjectId(userId); // Ensure userId is an ObjectId
+            query.userId = new mongoose.Types.ObjectId(userId); // Use 'new' keyword
         }
         if (available !== undefined) {
             query.available = available === 'true'; // Convert available to a boolean

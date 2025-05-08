@@ -128,33 +128,39 @@ const addEquipment = async (req, res) => {
 
 const getEquipmentByUser = async (req, res) => {
     try {
-        const { userId, available, type, location } = req.query;
+        const { userId, available, type, location, rentedBy } = req.query;
 
         console.log("userId:", userId);
         console.log("available:", available);
         console.log("type:", type);
         console.log("location:", location);
+        console.log("rentedBy:", rentedBy);
 
         // Build the query object dynamically
         const query = {};
 
         if (userId) {
-            query.userId = new mongoose.Types.ObjectId(userId); // Use 'new' keyword
+            query.userId = new mongoose.Types.ObjectId(userId);
+        }
+        if (rentedBy) {
+            query.rentedBy = new mongoose.Types.ObjectId(rentedBy);
         }
         if (available !== undefined) {
-            query.available = available === 'true'; // Convert available to a boolean
+            query.available = available === 'true';
         }
         if (type) {
-            query.type = type; // Filter by type (e.g., 'rent' or 'buy')
+            query.type = type;
         }
         if (location) {
-            query.location = location; // Filter by location
+            query.location = location;
         }
 
-        console.log('Query Object:', query); // Debugging: Log the query object
+        console.log('Query Object:', query);
 
         // Fetch equipment from the database based on the query and populate userId
-        const equipment = await Equipment.find(query).populate('userId');
+        const equipment = await Equipment.find(query)
+            .populate('userId')
+            .populate('rentedBy', 'fullName phoneNumber profileUrl');
 
         // Return the results
         res.status(200).json({
@@ -162,7 +168,7 @@ const getEquipmentByUser = async (req, res) => {
             data: equipment,
         });
     } catch (error) {
-        console.error('Error fetching equipment:', error.message); // Log the error
+        console.error('Error fetching equipment:', error.message);
         res.status(500).json({
             success: false,
             message: 'Error fetching equipment',

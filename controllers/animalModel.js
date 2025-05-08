@@ -57,7 +57,7 @@ const createAnimalPost = async (req, res) => {
 
         if (missingFields.length > 0) {
             console.log("Validation failed: Missing required fields:", missingFields);
-            
+
             return res.status(400).json({ message: `${missingFields.join(', ')} ${missingFields.length > 1 ? 'are' : 'is'} required.` });
         }
 
@@ -121,16 +121,15 @@ const getAnimalPosts = async (req, res) => {
         if (status) filter.status = status;
         if (sellerId) filter.sellerId = sellerId;
 
-        // // Location filtering
-        // if (village) filter['location.village'] = village;
-        // if (district) filter['location.district'] = district;
-        // if (taluka) filter['location.taluka'] = taluka;
-        // if (state) filter['location.state'] = state;
-
         // Tag filtering
         if (tags) filter.tags = { $in: tags.split(',') }; // Supports multiple tags
 
-        const animalPosts = await Animal.find(filter).lean();
+        const animalPosts = await Animal.find(filter)
+            .populate({
+                path: 'sellerId',
+                select: 'fullName phoneNumber email bio profileImage location status' // Include all seller fields you want
+            })
+            .lean();
 
         // Function to calculate distance between two points (lat/lon)
         const calculateDistance = (lat1, lon1, lat2, lon2) => {

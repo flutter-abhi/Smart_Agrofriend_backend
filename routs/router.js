@@ -10,7 +10,7 @@ const animalControllers = require('../controllers/animalModel');
 const { createFCMToken, updateFCMToken } = require('../controllers/notification');
 const { sendNotification } = require('../controllers/notification');
 ///user authenticated
-const { signupcontroller} = require('../controllers/lalitcontroller');
+const { signupcontroller } = require('../controllers/lalitcontroller');
 
 router.post('/signup', signupController);
 router.post('/login', loginController);
@@ -23,7 +23,7 @@ router.get('/getAllUser', authenticateJWT, getAllUsers);
 
 ///job post
 router.post('/job-posts/create', authenticateJWT, createJobPost);
-router.get('/job-posts/get', getJobPosts);
+router.get('/job-posts/get', authenticateJWT, getJobPosts);
 router.put('/job-posts/update', authenticateJWT, updateJobPost);
 router.delete('/job-posts/delete', authenticateJWT, deleteJobPost);
 

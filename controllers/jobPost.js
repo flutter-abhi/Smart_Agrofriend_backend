@@ -1,10 +1,10 @@
 const JobPost = require('../schema/Job_PostSchema');
 const User = require('../schema/UserSchema'); // Add User model import
+const { getLatLon } = require('./getlocation');
 
 
 // Create a new job post
 const createJobPost = async (req, res) => {
-
     const {
         title,
         description,
@@ -21,7 +21,7 @@ const createJobPost = async (req, res) => {
         workType
     } = req.body;
 
-    const farmerId = req.user.userId ?? req.user.id; // Assuming user ID is attached after authentication
+    const farmerId = req.user.userId ?? req.user.id;
 
     try {
         console.log({
@@ -38,7 +38,7 @@ const createJobPost = async (req, res) => {
             endDate,
             deadline,
             workType
-        }); // Log all fields before validation
+        });
 
         // Validate required fields
         if (!title || !description || !pay || !village || !district || !taluka || !startDate || !endDate) {
@@ -55,6 +55,10 @@ const createJobPost = async (req, res) => {
             return res.status(400).json({ message: 'Deadline must be before the start date' });
         }
 
+        // Get coordinates using the getLatLon function
+        const coordinates = await getLatLon(village, taluka, district, state);
+        console.log('Retrieved coordinates:', coordinates);
+
         // Create a new job post
         const newJobPost = new JobPost({
             farmerId,
@@ -62,16 +66,18 @@ const createJobPost = async (req, res) => {
             description,
             pay,
             labours_req,
-            labours_app: 0, // Default value for labours applied
+            labours_app: 0,
             workType,
             location: {
                 village,
                 district,
                 taluka,
-                state: state || 'maharastra', // Default state is Maharashtra
+                state: state || 'maharastra',
+                lat: coordinates?.latitude || null,
+                lon: coordinates?.longitude || null
             },
             skillsRequired,
-            status: 'open', // Default status is 'open'
+            status: 'open',
             startDate,
             endDate,
             deadline,
@@ -85,6 +91,7 @@ const createJobPost = async (req, res) => {
             jobPost: savedJobPost,
         });
     } catch (error) {
+        console.error('Error creating job post:', error);
         res.status(500).json({
             message: 'Error creating job post',
             error: error.message,
@@ -143,15 +150,15 @@ const getJobPosts = async (req, res) => {
         };
 
         try {
-            const userId = req.user?.userId;
-            if (!userId) {
+            // Check if user is authenticated
+            if (!req.user || !req.user.userId) {
                 console.log('No user ID found in request');
                 return res.status(200).json(jobPosts);
             }
 
-            const user = await User.findById(userId);
+            const user = await User.findById(req.user.userId);
             if (!user) {
-                console.log('User not found:', userId);
+                console.log('User not found:', req.user.userId);
                 return res.status(200).json(jobPosts);
             }
 
@@ -164,9 +171,14 @@ const getJobPosts = async (req, res) => {
             // Calculate distance for each job post
             const jobPostsWithDistance = jobPosts.map(post => {
                 try {
+                    // Check if post has location data
                     if (!post.location || !post.location.lat || !post.location.lon) {
                         console.log('Job post missing location data:', post._id);
-                        return { ...post, distance: null };
+                        // Try to get location from user's profile if available
+                        if (post.farmerId) {
+                            return { ...post, distance: null, locationMissing: true };
+                        }
+                        return { ...post, distance: null, locationMissing: true };
                     }
 
                     const distance = calculateDistance(
@@ -175,10 +187,10 @@ const getJobPosts = async (req, res) => {
                         post.location.lat,
                         post.location.lon
                     );
-                    return { ...post, distance };
+                    return { ...post, distance, locationMissing: false };
                 } catch (error) {
                     console.error('Error calculating distance for post:', post._id, error);
-                    return { ...post, distance: null };
+                    return { ...post, distance: null, locationMissing: true };
                 }
             });
 

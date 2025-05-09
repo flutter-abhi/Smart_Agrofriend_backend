@@ -23,7 +23,7 @@ router.get('/getAllUser', authenticateJWT, getAllUsers);
 
 ///job post
 router.post('/job-posts/create', authenticateJWT, createJobPost);
-router.get('/job-posts/get', authenticateJWT, getJobPosts);
+router.get('/job-posts/get', getJobPosts);
 router.put('/job-posts/update', authenticateJWT, updateJobPost);
 router.delete('/job-posts/delete', authenticateJWT, deleteJobPost);
 

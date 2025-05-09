@@ -103,7 +103,7 @@ const createJobPost = async (req, res) => {
 // Get all job posts or filter by criteria
 const getJobPosts = async (req, res) => {
     try {
-        const { status, village, district, taluka, state, farmerId } = req.query;
+        const { status, village, district, taluka, state, farmerId, userId } = req.query;
 
         // Building the filter object dynamically
         const filter = {};
@@ -149,23 +149,21 @@ const getJobPosts = async (req, res) => {
             return R * c; // Distance in km
         };
 
+        // If userId is not provided, return unsorted posts
+        if (!userId) {
+            return res.status(200).json({
+                message: 'Posts retrieved successfully',
+                posts: jobPosts
+            });
+        }
+
         try {
-            // Check if user is authenticated
-            if (!req.user || !req.user.userId) {
-                console.log('No user ID found in request');
-                return res.status(200).json(jobPosts);
-            }
-
-            const user = await User.findById(req.user.userId);
-            if (!user) {
-                console.log('User not found:', req.user.userId);
-                return res.status(200).json(jobPosts);
-            }
-
-            const userLocation = user.location;
-            if (!userLocation || !userLocation.lat || !userLocation.lon) {
-                console.log('User location not found or incomplete:', userLocation);
-                return res.status(200).json(jobPosts);
+            const user = await User.findById(userId);
+            if (!user || !user.location || !user.location.lat || !user.location.lon) {
+                return res.status(200).json({
+                    message: 'Posts retrieved successfully',
+                    posts: jobPosts
+                });
             }
 
             // Calculate distance for each job post
@@ -173,23 +171,17 @@ const getJobPosts = async (req, res) => {
                 try {
                     // Check if post has location data
                     if (!post.location || !post.location.lat || !post.location.lon) {
-                        console.log('Job post missing location data:', post._id);
-                        // Try to get location from user's profile if available
-                        if (post.farmerId) {
-                            return { ...post, distance: null, locationMissing: true };
-                        }
                         return { ...post, distance: null, locationMissing: true };
                     }
 
                     const distance = calculateDistance(
-                        userLocation.lat,
-                        userLocation.lon,
+                        user.location.lat,
+                        user.location.lon,
                         post.location.lat,
                         post.location.lon
                     );
                     return { ...post, distance, locationMissing: false };
                 } catch (error) {
-                    console.error('Error calculating distance for post:', post._id, error);
                     return { ...post, distance: null, locationMissing: true };
                 }
             });
@@ -204,11 +196,16 @@ const getJobPosts = async (req, res) => {
             // Combine sorted valid posts with invalid posts
             const finalPosts = [...validPosts, ...invalidPosts];
 
-            res.status(200).json(finalPosts);
+            res.status(200).json({
+                message: 'Posts sorted by distance',
+                posts: finalPosts
+            });
         } catch (locationError) {
             console.error('Error processing location data:', locationError);
-            // If there's an error with location processing, return unsorted posts
-            res.status(200).json(jobPosts);
+            res.status(200).json({
+                message: 'Posts retrieved successfully',
+                posts: jobPosts
+            });
         }
     } catch (error) {
         console.error('Error in getJobPosts:', error);

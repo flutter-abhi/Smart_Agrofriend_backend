@@ -142,32 +142,69 @@ const getJobPosts = async (req, res) => {
             return R * c; // Distance in km
         };
 
-        const userId = req.user.userId;
-        const user = await User.findById(userId);
-        const userLocation = user.location;
+        try {
+            const userId = req.user?.userId;
+            if (!userId) {
+                console.log('No user ID found in request');
+                return res.status(200).json(jobPosts);
+            }
 
-        if (userLocation && userLocation.lat && userLocation.lon) {
+            const user = await User.findById(userId);
+            if (!user) {
+                console.log('User not found:', userId);
+                return res.status(200).json(jobPosts);
+            }
+
+            const userLocation = user.location;
+            if (!userLocation || !userLocation.lat || !userLocation.lon) {
+                console.log('User location not found or incomplete:', userLocation);
+                return res.status(200).json(jobPosts);
+            }
+
             // Calculate distance for each job post
             const jobPostsWithDistance = jobPosts.map(post => {
-                const distance = calculateDistance(
-                    userLocation.lat,
-                    userLocation.lon,
-                    post.location.lat,
-                    post.location.lon
-                );
-                return { ...post, distance };
+                try {
+                    if (!post.location || !post.location.lat || !post.location.lon) {
+                        console.log('Job post missing location data:', post._id);
+                        return { ...post, distance: null };
+                    }
+
+                    const distance = calculateDistance(
+                        userLocation.lat,
+                        userLocation.lon,
+                        post.location.lat,
+                        post.location.lon
+                    );
+                    return { ...post, distance };
+                } catch (error) {
+                    console.error('Error calculating distance for post:', post._id, error);
+                    return { ...post, distance: null };
+                }
             });
 
-            // Sort by distance (closest first)
-            jobPostsWithDistance.sort((a, b) => a.distance - b.distance);
+            // Filter out posts with null distance and sort the rest
+            const validPosts = jobPostsWithDistance.filter(post => post.distance !== null);
+            const invalidPosts = jobPostsWithDistance.filter(post => post.distance === null);
 
-            res.status(200).json(jobPostsWithDistance);
-        } else {
-            // If user location is not provided, return the posts without sorting
+            // Sort valid posts by distance
+            validPosts.sort((a, b) => a.distance - b.distance);
+
+            // Combine sorted valid posts with invalid posts
+            const finalPosts = [...validPosts, ...invalidPosts];
+
+            res.status(200).json(finalPosts);
+        } catch (locationError) {
+            console.error('Error processing location data:', locationError);
+            // If there's an error with location processing, return unsorted posts
             res.status(200).json(jobPosts);
         }
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching job posts' });
+        console.error('Error in getJobPosts:', error);
+        res.status(500).json({
+            error: 'Error fetching job posts',
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 

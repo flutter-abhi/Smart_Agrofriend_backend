@@ -1,4 +1,5 @@
 const JobPost = require('../schema/Job_PostSchema');
+const User = require('../schema/UserSchema'); // Add User model import
 
 
 // Create a new job post
@@ -95,39 +96,76 @@ const createJobPost = async (req, res) => {
 // Get all job posts or filter by criteria
 const getJobPosts = async (req, res) => {
     try {
-        const { status, village, district, taluka, state, farmerId } = req.query; // Extracting query parameters
+        const { status, village, district, taluka, state, farmerId } = req.query;
 
         // Building the filter object dynamically
         const filter = {};
         if (status) {
-            filter.status = status; // Add status filter if provided
+            filter.status = status;
         }
 
         // Add location filters if provided
         const locationFilters = [];
         if (village) {
-            locationFilters.push({ 'location.village': village }); // Add village filter if provided
+            locationFilters.push({ 'location.village': village });
         }
         if (district) {
-            locationFilters.push({ 'location.district': district }); // Add district filter if provided
+            locationFilters.push({ 'location.district': district });
         }
         if (taluka) {
-            locationFilters.push({ 'location.taluka': taluka }); // Add taluka filter if provided
+            locationFilters.push({ 'location.taluka': taluka });
         }
         if (state) {
-            locationFilters.push({ 'location.state': state }); // Add state filter if provided
+            locationFilters.push({ 'location.state': state });
         }
 
         if (locationFilters.length > 0) {
-            filter.$or = locationFilters; // Use $or to match any of the location fields
+            filter.$or = locationFilters;
         }
 
         if (farmerId) {
-            filter.farmerId = farmerId; // Add farmerId filter if provided
+            filter.farmerId = farmerId;
         }
 
-        const jobPosts = await JobPost.find(filter);
-        res.json(jobPosts);
+        const jobPosts = await JobPost.find(filter).lean();
+
+        // Function to calculate distance between two points (lat/lon)
+        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+            const R = 6371; // Radius of the Earth in km
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in km
+        };
+
+        const userId = req.user.userId;
+        const user = await User.findById(userId);
+        const userLocation = user.location;
+
+        if (userLocation && userLocation.lat && userLocation.lon) {
+            // Calculate distance for each job post
+            const jobPostsWithDistance = jobPosts.map(post => {
+                const distance = calculateDistance(
+                    userLocation.lat,
+                    userLocation.lon,
+                    post.location.lat,
+                    post.location.lon
+                );
+                return { ...post, distance };
+            });
+
+            // Sort by distance (closest first)
+            jobPostsWithDistance.sort((a, b) => a.distance - b.distance);
+
+            res.status(200).json(jobPostsWithDistance);
+        } else {
+            // If user location is not provided, return the posts without sorting
+            res.status(200).json(jobPosts);
+        }
     } catch (error) {
         res.status(500).json({ error: 'Error fetching job posts' });
     }

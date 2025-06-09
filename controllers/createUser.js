@@ -24,7 +24,8 @@ const signupController = async (req, res) => {
     // Check if the user already exists using phoneNumber
     const existingUser = await User.findOne({ phoneNumber });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      console.log("User already exists");
+      return res.status(403).json({ message: 'User already exists' });
     }
 
     // Hash the password (if provided)
@@ -54,6 +55,7 @@ const signupController = async (req, res) => {
 
     const savedUser = await newUser.save();
 
+    
     // Generate JWT token
     const token = generateJWT(savedUser._id, savedUser.role);
 
